@@ -278,15 +278,9 @@ void openMaintLog(vector<Tickets>& TicketLog)
             cout << "Error opening file!";
         else
             {
-
-        /******************************************************************
-        The size of the vector returned by TicketLog.size() seems to always
-        be 1 higher than the actual number of tickets, so I decrement it in
-        the while loop condition to clean up the output to the file.
-        *******************************************************************/
             int size = TicketLog.size();
             int index = 0;
-            while(index < size -1)
+            while(index < size)
                 {               // "," is my delimiter to separate the fields
                     maintSaveFile << TicketLog[index].getTicketStatus() << ",";
                     maintSaveFile << TicketLog[index].getTicketNumber() << ",";

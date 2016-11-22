@@ -14,7 +14,7 @@ using namespace std;
 #include "Lazaro.h"
 #include "Brittany.h"
 
-const int NUM_OF_EMPLOYEES = 2;
+const int NUM_OF_EMPLOYEES = 2; //change the num of employees here
 
 void newTicket(vector<Tickets>&);
 void displayHeader(vector<Tickets>&);

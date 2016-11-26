@@ -9,20 +9,19 @@
 
 using namespace std;
 
-#include "Tickets.h"
-#include "Yvette.h"
-#include "Lazaro.h"
-#include "Brittany.h"
+const int NUM_OF_EMPLOYEES = 2;
+const int NUM_OF_LINES = 25;
 
-const int NUM_OF_EMPLOYEES = 2; //change the num of employees here
-
-void newTicket(vector<Tickets>&);
+void newTicket(vector<Tickets>&, vector<Tickets>&);
 void displayHeader(vector<Tickets>&);
-void openMaintLog(vector<Tickets>&);
-void populateVector (vector<Tickets>&);
-void mainMenu(vector<Tickets>&);
+void openMaintLog(vector<Tickets>&, vector<Tickets>&);
+void populateVector (vector<Tickets>&, vector<Tickets>&);
+void mainMenu(vector<Tickets>&, vector<Tickets>&);
 string todaysDate();
-void createWorkforce(vector<Tickets>&);
+void createWorkforce(vector<Tickets>&, vector<Tickets>&);
+void clearScreen(const int);
+void adjustScreen(int);
+void pauseScreen();
 
 /**************************************************************************
 Programmer: Dale Ming
@@ -38,48 +37,56 @@ The input will be string names and a char y/n.
 The output will be maintenance workforce inf and prompting for correctness,
 the function will return nothing.
 
-                ****************************************************
-                ****************************************************
-                **                                                **
-                ** This functions output and input need work!     **
-                ** There is no error checking or input validation!**
-                **                                                **
-                ****************************************************
-                ****************************************************
+                                        ****************************************************
+                                        ****************************************************
+                                        **                                                **
+                                        ** This functions input and output need work!     **
+                                        ** There is no error checking or input validation!**
+                                        **                                                **
+                                        ****************************************************
+                                        ****************************************************
 
 **************************************************************************/
-void createWorkforce(vector<Tickets>& TicketLog)
+void createWorkforce(vector<Tickets>& openTicketLog, vector<Tickets>& closedTicketLog)
     {
+        cin.ignore(1);
         Employee* empPool;
-        empPool = new Employee[NUM_OF_EMPLOYEES];       //dynsmcally allocates an array of struct pointers
+        empPool = new Employee[NUM_OF_EMPLOYEES];       //dynamically allocates an array of struct pointers
 
-        cout << "The number of workers is currently set at " << NUM_OF_EMPLOYEES
-             << ". \nPlease contact the admin to adjust the number of employees.\n";
+        cout << "\t\tThe number of workers is currently set at " << NUM_OF_EMPLOYEES
+             << ". \n\t\tPlease contact the admin to adjust the number of employees.\n";
+
         for (int index = 0; index < NUM_OF_EMPLOYEES; index++)
             {
-                cout << "Please key in the name of the maintenance worker number " << index +1 << ": ";
+                clearScreen(NUM_OF_LINES);
+                cout << "\t    Please key in the name of the maintenance worker number " << index +1 << ": ";
+                adjustScreen(12);
+                cout << "\t\t\t\t\t";
                 getline(cin, empPool[index].employeeName);           //sets employeeName directly
                 empPool[index].setEmployeeNumber(index + 1);    //sets employeeNumber thru the set function
             }
         int flag = 1;
         while (flag == 1)
             {
-                cout << "\n\nToday's workforce is: \n";
+                clearScreen(NUM_OF_LINES);
+                cout << "\n\n\t\t\tToday's workforce is: \n";
                 cin.ignore(0);
                 for (int index = 0; index < NUM_OF_EMPLOYEES; index++)
                     {
-                        cout << "\t\t" << empPool[index].employeeNumber << ":  "
+                        cout << "\t\t\t\t\t" << empPool[index].employeeNumber << ":  "
                              << empPool[index].getEmployeeName() << endl;
                     }
-                cout << "Is this correct? (y/n)\n";
-
+                cout << "\t\t\tIs this correct? (y/n)\n";
+                adjustScreen(10);
+                cout << "\t\t\t\t\t";
                 char response;
                 cin >> response;
 
                 if (response == 'y')
                     {
-                        displayHeader(TicketLog);
-                        mainMenu(TicketLog);
+                        clearScreen(NUM_OF_LINES);
+                        displayHeader(openTicketLog);
+                        mainMenu(openTicketLog, closedTicketLog);
                         flag = 2;
                         break;
                     }
@@ -87,41 +94,50 @@ void createWorkforce(vector<Tickets>& TicketLog)
                 else if (response == 'n')
                     {
                         cin.ignore();
-                        createWorkforce(TicketLog);
+                        clearScreen(NUM_OF_LINES);
+                        createWorkforce(openTicketLog, closedTicketLog);
                         flag = 1;
                     }
             }
     }
 
 /**************************************************************************
+
 Programmer: Dale Ming
 
 This is basically a stub function that demonstrates the calling of the
 todaysDate() function. The function creates a new Tickets object and adds
-it to the Tickets object vector. Then the function displays a statement
-that a new object had been create and reports the new date.
+it to the Tickets object vector. T
+
 **************************************************************************/
-void newTicket(vector<Tickets>& TicketLog)
+
+                                /******************************************************************
+                                *******************************************************************
+                                **                                                               **
+                                ** This function should be deleted and replaced by the programmer**
+                                ** taking on new ticket input.                                   **
+                                **
+                                *******************************************************************
+                                ******************************************************************/
+
+void newTicket(vector<Tickets>& openTicketLog, vector<Tickets>& closedTicketLog)
     {
         Tickets workTicket;
-        TicketLog.push_back(workTicket);
+        openTicketLog.push_back(workTicket);
 
         /******************************************************************
-        The size of the vector returned by TicketLog.size() seems to always
+        The size of the vector returned by openTicketLog.size() seems to always
         be 1 higher than the actual number of tickets, so I decrement it in
         order to place information in the correct vector[index] position.
         *******************************************************************/
-        int newObjectPosition = TicketLog.size() - 1;
-        string temp = ",\n";
-        TicketLog[newObjectPosition].setDate(todaysDate());
-        cout << "Ticket object for " << TicketLog[newObjectPosition].getDate()
-             << " is created.\n\n";
-        //TicketLog[newObjectPosition].setNotes(temp);
-        displayHeader(TicketLog);
-        mainMenu(TicketLog);
+        int newObjectPosition = openTicketLog.size() - 1;
+        openTicketLog[newObjectPosition].setDate(todaysDate());
+        displayHeader(openTicketLog);
+        mainMenu(openTicketLog, closedTicketLog);
     }
 
 /**************************************************************************
+
 Programmer: Dale Ming
 
 The displayHeader function is called by main() and accepts a reference to
@@ -129,27 +145,35 @@ the vector of class Tickets objects. The function uses a while loop to
 output the return values of selected Tickets class member functions to the
 console to represent the list of pending maintenance tickets.
 
-The function requires no user input, all input id from the vector, and all
+The function requires no user input, all input is from the vector, and
 output is to the console.
-**************************************************************************/
-void displayHeader(vector<Tickets>& TicketLog)
-    {
-        int size = TicketLog.size();
-        int index = 0;
 
+**************************************************************************/
+void displayHeader(vector<Tickets>& openTicketLog)
+    {
+        int size = openTicketLog.size();
+        int index = 0;
+        int numOfLines = openTicketLog.size();
+        adjustScreen(12 - numOfLines);
         while(index < size)
             {
-                cout << right << setw(10)
-                     << TicketLog[index].getTicketNumber() << "  "
-                     << TicketLog[index].getDate() << "  "
-                     << TicketLog[index].getApt() << "  " << left << setw(10)
-                     << TicketLog[index].getIssue() << "  "
-                     << TicketLog[index].getNotes() << endl;
-                 index++;
+                if (openTicketLog[index].getTicketStatus() == "Open")
+                    {
+                        cout << right << setw(10)
+                             << openTicketLog[index].getTicketNumber() << "  "
+                             << openTicketLog[index].getDate() << "  "
+                             << openTicketLog[index].getApt() << "  " << left << setw(10)
+                             << openTicketLog[index].getIssue() << "  "
+                             << openTicketLog[index].getNotes() << endl;
+                        ++index;
+                    }
+                else ++index;
             }
+            adjustScreen(3);
     }
 
 /**************************************************************************
+
 Programmer: Dale Ming
 
 populateVector is called by main() and executes to populate a vector of
@@ -160,13 +184,12 @@ field is separated by a comma that I use as a delimiter to trigger the end
 of the field. As each instance of the object is created the member variables
 are populated with the necessary information.
 
-The function does not require any user input and the output is to the vector
-of class Tickets objects.
+The function does not require any user input and there is no console output.
+
 **************************************************************************/
-void populateVector (vector<Tickets>& TicketLog)
+void populateVector (vector<Tickets>& openTicketLog, vector<Tickets>& closedTicketLog)
     {
         ifstream maintFile("TicketLog.txt", ios::in);//ifstream object
-        //ifstream maintFile("TicketLogSave.txt", ios::in);
         if (!maintFile)
             cout << "Error opening file!";
         string temp;
@@ -175,44 +198,81 @@ void populateVector (vector<Tickets>& TicketLog)
             {
         /******************************************************************
         The next 2 lines of code creates a new instance of the class
-        Tickets object and pushes back the size of the TicketLog vector to
+        Tickets object and pushes back the size of the openTicketLog vector to
         allocate enough space for the object.
         ******************************************************************/
-                Tickets workTicket;
-                TicketLog.push_back(workTicket);
+                Tickets openWorkTicket;
+                openTicketLog.push_back(openWorkTicket);
+
+                Tickets closedWorkTicket;
+                closedTicketLog.push_back(closedWorkTicket);
 
                 getline(maintFile, temp, '~');
-                TicketLog[index].setTicketStatus(temp);  //status
 
-                getline(maintFile, temp, '~');
-                TicketLog[index].setTicketNumber(temp); //ticket number
+                if (temp == "Open")
+                    {
+                        openTicketLog[index].setTicketStatus(temp);  //status
 
-                getline(maintFile, temp, '~');
-                TicketLog[index].setDate(temp);         //date
+                        getline(maintFile, temp, '~');
+                        openTicketLog[index].setTicketNumber(temp); //ticket number
 
-                getline(maintFile, temp, '~');
-                TicketLog[index].setApt(temp);          //apt number
+                        getline(maintFile, temp, '~');
+                        openTicketLog[index].setDate(temp);         //date
 
-                getline(maintFile, temp, '~');
-                TicketLog[index].setName(temp);         //name
+                        getline(maintFile, temp, '~');
+                        openTicketLog[index].setApt(temp);          //apt number
 
-                getline(maintFile, temp, '~');
-                TicketLog[index].setPhone(temp);        //phone
+                        getline(maintFile, temp, '~');
+                        openTicketLog[index].setName(temp);         //name
 
-                getline(maintFile, temp, '~');
-                TicketLog[index].setPriority(temp);     //priority
+                        getline(maintFile, temp, '~');
+                        openTicketLog[index].setPhone(temp);        //phone
 
-                getline(maintFile, temp, '~');
-                TicketLog[index].setIssue(temp);        //issue
+                        getline(maintFile, temp, '~');
+                        openTicketLog[index].setPriority(temp);     //priority
 
-                getline(maintFile, temp, '\n');
-                TicketLog[index].setNotes(temp);        //notes
+                        getline(maintFile, temp, '~');
+                        openTicketLog[index].setIssue(temp);        //issue
+
+                        getline(maintFile, temp, '\n');
+                        openTicketLog[index].setNotes(temp);        //notes
+                    }
+                else if (temp == "Closed")
+                    {
+                        closedTicketLog[index].setTicketStatus(temp);  //status
+
+                        getline(maintFile, temp, '~');
+                        closedTicketLog[index].setTicketNumber(temp); //ticket number
+
+                        getline(maintFile, temp, '~');
+                        closedTicketLog[index].setDate(temp);         //date
+
+                        getline(maintFile, temp, '~');
+                        closedTicketLog[index].setApt(temp);          //apt number
+
+                        getline(maintFile, temp, '~');
+                        closedTicketLog[index].setName(temp);         //name
+
+                        getline(maintFile, temp, '~');
+                        closedTicketLog[index].setPhone(temp);        //phone
+
+                        getline(maintFile, temp, '~');
+                        closedTicketLog[index].setPriority(temp);     //priority
+
+                        getline(maintFile, temp, '~');
+                        closedTicketLog[index].setIssue(temp);        //issue
+
+                        getline(maintFile, temp, '\n');
+                        closedTicketLog[index].setNotes(temp);        //notes
+                    }
+
             }
             maintFile.close();  //close that file!!
     }
 
 
 /**************************************************************************
+
 Programmer: Dale Ming
 
 todaysDate is a public member function of the Tickets class, it will return
@@ -226,6 +286,10 @@ which accepts the address of the value returned by time(0). A
 struct pointer object is created to point at the return values
 of several of tm's functions Each one is then passed to a
 stringstream object and converted to a string.
+
+There is no user input and there is no console output. The function returns
+the date as a string data type (format nn/nn/nnnn).
+
 **************************************************************************/
 string todaysDate()
     {
@@ -247,6 +311,7 @@ string todaysDate()
     }
 
 /**************************************************************************
+
 Programmer: Dale Ming
 
 openMaintLog is called when the exit item is selected on the main menu and
@@ -259,34 +324,107 @@ their return value to the file followed by a comma.
 
 No input from the user is required and the output will be to a file, not
 to the console.
+
 **************************************************************************/
-void openMaintLog(vector<Tickets>& TicketLog)
+void openMaintLog(vector<Tickets>& openTicketLog, vector<Tickets>& closedTicketLog)
     {
+        clearScreen(NUM_OF_LINES);
+        cout << "\t\t\t\tSaving files...";
+        adjustScreen(14);
+        pauseScreen();
+        clearScreen(NUM_OF_LINES);
         ofstream maintSaveFile("TicketLogSave.txt", ios::out);  //ofstream object
         if (!maintSaveFile)
             cout << "Error opening file!";
         else
             {
 
-            int size = TicketLog.size();
+            int size = openTicketLog.size();
             int index = 0;
             while(index < size)
-                {               // "," is my delimiter to separate the fields
-                    maintSaveFile << TicketLog[index].getTicketStatus() << "~";
-                    maintSaveFile << TicketLog[index].getTicketNumber() << "~";
-                    maintSaveFile << TicketLog[index].getDate() << "~";
-                    maintSaveFile << TicketLog[index].getApt() << "~";
-                    maintSaveFile << TicketLog[index].getName() << "~";
-                    maintSaveFile << TicketLog[index].getPhone() << "~";
-                    maintSaveFile << TicketLog[index].getPriority() << "~";
-                    maintSaveFile << TicketLog[index].getIssue() << "~";
-                    maintSaveFile << TicketLog[index].getNotes() << "\n\n";
+                {               // "~" is my delimiter to separate the fields
+                    maintSaveFile << openTicketLog[index].getTicketStatus() << "~";
+                    maintSaveFile << openTicketLog[index].getTicketNumber() << "~";
+                    maintSaveFile << openTicketLog[index].getDate() << "~";
+                    maintSaveFile << openTicketLog[index].getApt() << "~";
+                    maintSaveFile << openTicketLog[index].getName() << "~";
+                    maintSaveFile << openTicketLog[index].getPhone() << "~";
+                    maintSaveFile << openTicketLog[index].getPriority() << "~";
+                    maintSaveFile << openTicketLog[index].getIssue() << "~";
+                    maintSaveFile << openTicketLog[index].getNotes() << "\n\n";
                     index++;
                 }
             }
         maintSaveFile.close();      //close that file!!
     }
 
+/**************************************************************************
+
+Programmer: Dale Ming
+
+clearScreen adds lines to the console effectively clearing the output
+console window. The number of lines is set by a global const. The function
+loops thru a for loop adding new lines to the screen.
+
+There is no user input and the console output is empty lines.
+
+**************************************************************************/
+void clearScreen(const int NUM_OF_LINES)
+    {
+        for(int index = 0; index < NUM_OF_LINES; index++) cout << "\n";
+    }
+
+
+/**************************************************************************
+
+Programmer: Dale Ming
+
+adjustScreen is almost identical to clearScreen except the programmer
+passes an int as a parameter to set the condition of the for loop.
+
+There is no user input and the console output is empty lines.
+
+**************************************************************************/
+void adjustScreen(int lines)
+    {
+        for (int index = 0; index < lines; index++) cout << "\n";
+    }
+
+/**************************************************************************
+
+Programmer: Dale Ming
+
+pauseScreen uses clock() to get a starting point for measuring time.
+clock_t is a data type capable if representing clock "ticks" or .001
+seconds.
+
+There is no user input or console output.
+
+**************************************************************************/
+void pauseScreen()
+    {
+        const int waitTime = 2; // change the value of this variable to change the pause time
+        clock_t start_time = clock();// sets the start time
+        clock_t end_time = waitTime * 1000 + start_time;// sets the duration
+        while(clock() != end_time); //starts a loop that ends after 2000 ticks or 2 seconds
+    }
+
+
+
+
 
 
 #endif // DALE_H_INCLUDED
+
+
+
+
+
+
+
+
+
+
+
+
+
